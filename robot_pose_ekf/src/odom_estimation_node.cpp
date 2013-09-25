@@ -442,12 +442,23 @@ namespace estimation
 
       // initialize filer with odometry frame
       if (imu_active_ && gps_active_ && !my_filter_.isInitialized()) {
-	Quaternion q = imu_meas_.getRotation();
+        Quaternion q = imu_meas_.getRotation();
         Vector3 p = gps_meas_.getOrigin();
         Transform init_meas_ = Transform(q, p);
         my_filter_.initialize(init_meas_, gps_stamp_);
         ROS_INFO("Kalman filter initialized with gps and imu measurement");
-      }	
+      }
+      else if ( gps_active_ && vo_active_ && !imu_used_ && !my_filter_.isInitialized()) {
+        Quaternion q = vo_meas_.getRotation();
+        Vector3 p = gps_meas_.getOrigin();
+        Transform init_meas_ = Transform(q, p);
+        my_filter_.initialize(init_meas_, gps_stamp_);
+        ROS_INFO("Kalman filter initialized with gps and vo measurement");
+      }
+      else if ( gps_active_ && !imu_used_ && !vo_used_ && !my_filter_.isInitialized()) {
+        my_filter_.initialize(gps_meas_, gps_stamp_);
+        ROS_INFO("Kalman filter initialized with gps measurement");
+      }
       else if ( odom_active_  && !gps_used_ && !my_filter_.isInitialized()){
         my_filter_.initialize(odom_meas_, odom_stamp_);
         ROS_INFO("Kalman filter initialized with odom measurement");
